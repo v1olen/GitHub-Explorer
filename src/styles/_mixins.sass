@@ -1,0 +1,40 @@
+@use "sass:map"
+
+@function _($row, $type)
+    @return "var(--#{$row}#{$type})"
+
+=Typo($name)
+    @extend %Typo#{$name}
+
+=breakpoint($value, $mode: min)
+    @if $mode != min and $mode != max
+        @warn 'The $mode argument only accepts \'min\' or \'max\' values.'
+    @media screen and (#{$mode}-width: #{$value})
+        @content
+
+=Placeholder
+    $selector: ''
+    $prefixes: ( moz: "::-moz", webkit: "::-webkit", ie: ":-ms" )
+    @each $prop, $value in $prefixes
+        @if $prop != "moz"
+            $selector: #{$value}-input-Placeholder
+        @else
+            $selector: #{$value}-placeholder
+        @if &
+            &#{$selector}
+                @content
+        @else
+            #{$selector}
+                @content
+
+
+%TypoJumboInput
+    font-size: 3rem
+    color: #{_(Primary, Dark)}
+    &::placeholder
+        color: #{_(Primary, Accent)}
+
+%TypoJumboTip
+    font-size: 2rem
+    font-style: italic
+    color: #{_(Secondary, Light)}
