@@ -8,15 +8,17 @@
             class="View__UsernameInput"
             type="text"
             placeholder="Type GitHub username…"
-            @focus="isInputFocused = true"
-            @blur="isInputFocused = false"
+            @focus="onInputFocus"
+            @blur="onInputBlur"
+            @input="onInputChange"
         >
         <transition name="fade">
             <p
                 v-if="shouldBeTipVisible"
                 class="View__UsernameTip"
+                :class="{[`--Error`]: !isUsernameValid}"
             >
-                …and hit enter when you are done
+                {{ message }}
             </p>
         </transition>
     </div>
@@ -31,9 +33,31 @@ import { Component, Vue } from "vue-property-decorator";
 export default class App extends Vue {
     username = ``;
     isInputFocused = false;
+    isInputTouched = false;
+    messages = {
+        HIT_ENTER: `…and hit enter when you are done`,
+        FIX_USERNAME: `You must enter the username to move on`,
+    };
 
+    onInputChange() {
+        this.isInputTouched = true;
+    }
+    onInputFocus() {
+        this.isInputFocused = true;
+    }
+    onInputBlur() {
+        this.isInputFocused = false;
+        this.isInputTouched = true;
+    }
+
+    get message() {
+        return this.messages[this.isUsernameValid ? `HIT_ENTER` : `FIX_USERNAME`];
+    }
+    get isUsernameValid() {
+        return !((this.isInputTouched) && !this.username.length);
+    }
     get shouldBeTipVisible() {
-        return this.isInputFocused || this.username.length;
+        return this.isInputTouched || this.isInputFocused;
     }
 };
 </script>
@@ -75,5 +99,7 @@ export default class App extends Vue {
             top: calc(50% + 3rem)
             transform: translate3d(0, -50%, 0)
             +Typo(JumboTip)
+            &.--Error
+                color: #{_(Global, Warning)}
 
 </style>
