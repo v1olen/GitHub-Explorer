@@ -2,6 +2,7 @@
     <div
         id="app"
         class="View"
+        :class="{ [`--ExploringMode`]: isExploringModeEnabled }"
     >
         <input
             v-model="username"
@@ -16,7 +17,7 @@
             <p
                 v-if="shouldBeTipVisible"
                 class="View__UsernameTip"
-                :class="{[`--Error`]: !isUsernameValid}"
+                :class="{ [`--Error`]: !isUsernameValid }"
             >
                 {{ message }}
             </p>
@@ -34,6 +35,7 @@ export default class App extends Vue {
     username = ``;
     isInputFocused = false;
     isInputTouched = false;
+    isExploringModeEnabled = false;
     messages = {
         HIT_ENTER: `…and hit enter when you are done`,
         FIX_USERNAME: `You must enter the username to move on`,
@@ -57,7 +59,7 @@ export default class App extends Vue {
         return !((this.isInputTouched) && !this.username.length);
     }
     get shouldBeTipVisible() {
-        return this.isInputTouched || this.isInputFocused;
+        return (this.isInputTouched || this.isInputFocused) && !this.isExploringModeEnabled;
     }
 };
 </script>
@@ -77,6 +79,10 @@ export default class App extends Vue {
     align-content: center
     &__Username
         &Input
+            position: absolute
+            top: 50%
+            left: 50%
+            transform: translate3d(-50%, calc(-50% - 1rem), 0)
             height: 6rem
             width: 64rem
             padding: 1rem
@@ -86,11 +92,17 @@ export default class App extends Vue {
             border: 1px solid #{_(Primary, Light)}
             box-shadow: rgba(0, 0, 0, .1) 0 0 .25rem -.125rem
             border-radius: 8px
+            transition: 1s
             +Typo(JumboInput)
             &:focus
                 border-color: transparent
                 box-shadow: rgba(0, 0, 0, .4) 0 0 1rem
                 border-radius: .5rem
+            .--ExploringMode &
+                top: 0
+                width: 100%
+                transform: translate3d(-50%, 0, 0)
+                background: transparent
         &Tip
             position: absolute
             text-align: center
