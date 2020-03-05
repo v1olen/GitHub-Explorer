@@ -1,0 +1,11 @@
+{
+    "eslint.enable": true,
+    "eslint.validate": [
+        "javascript",
+        "typescript",
+        "vue",
+    ],
+    "javascript.preferences.quoteStyle": "double",
+    "javascript.suggest.completeFunctionCalls": true,
+    "javascript.implicitProjectConfig.experimentalDecorators": true,
+}
