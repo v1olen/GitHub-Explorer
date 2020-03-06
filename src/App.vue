@@ -2,7 +2,7 @@
     <div
         id="app"
         class="View"
-        :class="{ [`--ExploringMode`]: isExploringModeEnabled }"
+        :class="{ [`--Folded`]: isAppUnfolded }"
     >
         <input
             v-model="username"
@@ -12,60 +12,157 @@
             @focus="onInputFocus"
             @blur="onInputBlur"
             @input="onInputChange"
+            @keydown.enter="onSubmit"
         >
         <transition name="fade">
             <p
-                v-if="shouldBeTipVisible"
-                class="View__UsernameTip"
-                :class="{ [`--Error`]: !isUsernameValid }"
+                v-if="isStatusVisible"
+                class="View__Status"
+                :class="{ [`--Error`]: isError }"
             >
                 {{ message }}
             </p>
+        </transition>
+        <transition name="fade">
+            <div
+                v-if="areRepositoriesReady"
+                v-perfect-scroll="scrollSettings"
+                class="Repositories"
+            >
+                <RepositoryComponent
+                    v-for="repository in nonForkRepositories"
+                    :key="repository.id"
+                    :repository="repository"
+                />
+            </div>
         </transition>
     </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import Vue from "vue";
+import Component from 'vue-class-component';
+import { Action, Getter } from "vuex-class";
+import { Repository } from "./types/github";
+import RepositoryComponent from "./components/Repository.vue";
+
+import { isOneOfTrue, areAllTrue } from "./helpers";
 
 @Component({
-    components: {},
+    components: {
+        RepositoryComponent,
+    },
 })
 export default class App extends Vue {
+    @Action setUser!: ({ username, onFailure }: { username: string; onFailure: Function }) => void; 
+    @Getter isUserStored!: (username: string) => boolean; 
+    @Getter getRepositories!: (username: string) => Repository[]; 
+
     username = ``;
     isInputFocused = false;
     isInputTouched = false;
-    isExploringModeEnabled = false;
+    isAppUnfolded = false;
+    areRepositoriesVisible = false;
+    userNotFound = false;
+
     messages = {
         HIT_ENTER: `…and hit enter when you are done`,
-        FIX_USERNAME: `You must enter the username to move on`,
+        CORRECT_USERNAME: `You must enter the username to move on`,
+        USER_NOT_FOUND: `User not found`,
+        NO_REPOS: `This user has no repositories`,
+    };
+    scrollSettings = {
+        wheelSpeed: .75,
+        wheelPropagation: true,
+        minScrollbarLength: 20,
+        swipeEasing: true,
+        suppressScrollX: true,
     };
 
     onInputChange() {
         this.isInputTouched = true;
+        this.disableExploringMode();
     }
     onInputFocus() {
         this.isInputFocused = true;
+        this.userNotFound = false;
     }
     onInputBlur() {
         this.isInputFocused = false;
         this.isInputTouched = true;
     }
+    onSubmit({ target }: { target: HTMLInputElement}) {
+        if(this.isUsernameValid) {
+            this.setUser({ username: this.username, onFailure: () => {
+                this.userNotFound = true;
+            } });
+            this.isAppUnfolded = true;
+            setTimeout(() => {
+                this.areRepositoriesVisible = true;
+
+                target.blur();
+            }, 750);
+        }
+    }
+
+    disableExploringMode() {
+        this.isAppUnfolded = false;
+        this.areRepositoriesVisible = false;
+    }
 
     get message() {
-        return this.messages[this.isUsernameValid ? `HIT_ENTER` : `FIX_USERNAME`];
+        if (this.userNotFound) return this.messages[`USER_NOT_FOUND`];
+        if (this.isRepositoriesLengthNull) return this.messages[`NO_REPOS`];
+        return this.messages[this.isUsernameToCorrect ? `CORRECT_USERNAME` : `HIT_ENTER`];
+    }
+    get nonForkRepositories() {
+        return this.getRepositories(this.username).filter(({ fork }) => !fork);
+    }
+    
+    get isError() {
+        return isOneOfTrue(
+            !this.isUsernameValid && this.isInputTouched,
+            this.isRepositoriesLengthNull,
+            this.userNotFound,
+        );
     }
     get isUsernameValid() {
-        return !((this.isInputTouched) && !this.username.length);
+        return !!this.username.length;
     }
-    get shouldBeTipVisible() {
-        return (this.isInputTouched || this.isInputFocused) && !this.isExploringModeEnabled;
+    get isUsernameToCorrect() {
+        return !this.isUsernameValid && this.isInputTouched;
+    }
+    get isStatusVisible() {
+        return isOneOfTrue(
+            this.isError,
+            !this.isAppUnfolded && this.isInputFocused,
+        );
+    }
+    get isRepositoriesLengthNull() {
+        return areAllTrue(
+            this.areRepositoriesReady,
+            this.nonForkRepositories.length === 0,
+        );
+    }
+    get areRepositoriesReady() {
+        return areAllTrue(
+            this.areRepositoriesVisible,
+            this.isUserStored(this.username),
+        );
     }
 };
 </script>
 
 <style lang="sass">
 @import "styles/mixins"
+
+.Repositories
+    display: grid
+    gap: 1rem
+    height: calc(100vh - 16rem)
+    align-content: start
+    transform: translate3d(0, 3.5rem, 0)
+    padding: 0 1rem
 
 .View
     display: grid
@@ -98,20 +195,20 @@ export default class App extends Vue {
                 border-color: transparent
                 box-shadow: rgba(0, 0, 0, .4) 0 0 1rem
                 border-radius: .5rem
-            .--ExploringMode &
+            .--Folded &
                 top: 0
                 width: 100%
                 transform: translate3d(-50%, 0, 0)
                 background: transparent
-        &Tip
-            position: absolute
-            text-align: center
-            margin: .75rem 0
-            width: 100%
-            top: calc(50% + 3rem)
-            transform: translate3d(0, -50%, 0)
-            +Typo(JumboTip)
-            &.--Error
-                color: #{_(Global, Warning)}
+    &__Status
+        position: absolute
+        text-align: center
+        margin: .75rem 0
+        width: 100%
+        top: calc(50% + 3rem)
+        transform: translate3d(0, -50%, 0)
+        +Typo(JumboStatus)
+        &.--Error
+            color: #{_(Global, Warning)}
 
 </style>
