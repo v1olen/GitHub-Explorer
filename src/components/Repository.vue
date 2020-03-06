@@ -33,7 +33,7 @@ import { Repository } from "../types/github";
     },
 })
 
-export default class App extends Vue {
+export default class RepositoryComponent extends Vue {
     repository!: Repository;
 };
 </script>

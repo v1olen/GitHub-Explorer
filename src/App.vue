@@ -35,6 +35,9 @@
                     :repository="repository"
                 />
             </div>
+            <Loader
+                v-else-if="isAppUnfolded && !isStatusVisible"
+            />
         </transition>
     </div>
 </template>
@@ -45,12 +48,14 @@ import Component from 'vue-class-component';
 import { Action, Getter } from "vuex-class";
 import { Repository } from "./types/github";
 import RepositoryComponent from "./components/Repository.vue";
+import Loader from "./components/Loader.vue";
 
 import { isOneOfTrue, areAllTrue } from "./helpers";
 
 @Component({
     components: {
         RepositoryComponent,
+        Loader,
     },
 })
 export default class App extends Vue {
@@ -81,11 +86,11 @@ export default class App extends Vue {
 
     onInputChange() {
         this.isInputTouched = true;
+        this.userNotFound = false;
         this.disableExploringMode();
     }
     onInputFocus() {
         this.isInputFocused = true;
-        this.userNotFound = false;
     }
     onInputBlur() {
         this.isInputFocused = false;
