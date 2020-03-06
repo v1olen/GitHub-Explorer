@@ -94,3 +94,12 @@ interface Owner {
     url: string;
     type: string;
 }
+
+export interface Branch {
+    name: string;
+    commit: {
+        sha: string;
+        url: string;
+    };
+    protected: boolean;
+}

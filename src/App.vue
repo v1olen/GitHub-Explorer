@@ -33,12 +33,27 @@
                     v-for="repository in nonForkRepositories"
                     :key="repository.id"
                     :repository="repository"
+                    @branchesClick="showBranches"
                 />
             </div>
             <Loader
                 v-else-if="isAppUnfolded && !isStatusVisible"
             />
         </transition>
+        <div class="Modal" v-if="isBranchMode">
+            <div v-if="areBranchesReady">
+                <div
+                    v-for="branch in getBranches(branchUsername, branchRepository)"
+                    :key="branch.name"
+                >
+                    {{ branch.name }}
+                    {{ branch.commit.sha }}
+                </div>
+            </div>
+            <Loader
+                v-else
+            />
+        </div>
     </div>
 </template>
 
@@ -46,7 +61,7 @@
 import Vue from "vue";
 import Component from 'vue-class-component';
 import { Action, Getter } from "vuex-class";
-import { Repository } from "./types/github";
+import { Repository, Branch } from "./types/github";
 import RepositoryComponent from "./components/Repository.vue";
 import Loader from "./components/Loader.vue";
 
@@ -60,15 +75,22 @@ import { isOneOfTrue, areAllTrue } from "./helpers";
 })
 export default class App extends Vue {
     @Action setUser!: ({ username, onFailure }: { username: string; onFailure: Function }) => void; 
-    @Getter isUserStored!: (username: string) => boolean; 
-    @Getter getRepositories!: (username: string) => Repository[]; 
+    @Action setBranch!: ({ username, repository, onFailure }: { username: string; repository: string; onFailure: Function }) => void; 
+    @Getter isUserStored!: (username: string) => boolean;
+    @Getter getRepositories!: (username: string) => Repository[];
+    @Getter isRepositoryStored!: (username: string, repository: string) => boolean;
+    @Getter getBranches!: (username: string, repository: string) => Branch[];
 
     username = ``;
+    branchUsername = ``;
+    branchRepository = ``;
     isInputFocused = false;
     isInputTouched = false;
     isAppUnfolded = false;
     areRepositoriesVisible = false;
     userNotFound = false;
+    isBranchMode = false;
+    console = console
 
     messages = {
         HIT_ENTER: `…and hit enter when you are done`,
@@ -98,21 +120,39 @@ export default class App extends Vue {
     }
     onSubmit({ target }: { target: HTMLInputElement}) {
         if(this.isUsernameValid) {
-            this.setUser({ username: this.username, onFailure: () => {
-                this.userNotFound = true;
-            } });
-            this.isAppUnfolded = true;
-            setTimeout(() => {
-                this.areRepositoriesVisible = true;
-
-                target.blur();
-            }, 750);
+            this.enableExploringMode(target);
+            this.setUser({
+                username: this.username,
+                onFailure: () => this.userNotFound = true,
+            });
         }
     }
-
+    showBranches({ repository, username }: { repository: string; username: string }) {
+        this.enableBranchMode(username, repository);
+        this.setBranch({
+            username,
+            repository,
+            onFailure: () => this.userNotFound = true,
+        });
+    }
+    enableExploringMode(target: HTMLInputElement) {
+        this.isAppUnfolded = true;
+        setTimeout(() => {
+            this.areRepositoriesVisible = true;
+            target.blur();
+        }, 750);
+    }
     disableExploringMode() {
         this.isAppUnfolded = false;
         this.areRepositoriesVisible = false;
+    }
+    enableBranchMode(username: string, repository: string) {
+        this.isBranchMode = true;
+        this.branchRepository = repository;
+        this.branchUsername = username;
+    }
+    disableBranchMode() {
+        this.isBranchMode = false;
     }
 
     get message() {
@@ -123,7 +163,6 @@ export default class App extends Vue {
     get nonForkRepositories() {
         return this.getRepositories(this.username).filter(({ fork }) => !fork);
     }
-    
     get isError() {
         return isOneOfTrue(
             !this.isUsernameValid && this.isInputTouched,
@@ -153,6 +192,12 @@ export default class App extends Vue {
         return areAllTrue(
             this.areRepositoriesVisible,
             this.isUserStored(this.username),
+        );
+    }
+    get areBranchesReady() {
+        console.log(this.branchUsername, this.branchRepository, this.isRepositoryStored(this.branchUsername, this.branchRepository));
+        return areAllTrue(
+            this.isRepositoryStored(this.branchUsername, this.branchRepository),
         );
     }
 };

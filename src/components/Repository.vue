@@ -15,6 +15,10 @@
         <a
             class="Repository__BranchesRoute"
             href="#"
+            @click.prevent="$emit(`branchesClick`, {
+                repository: repository.name,
+                username: repository.owner.login,
+            })"
         >
             branches
         </a>
