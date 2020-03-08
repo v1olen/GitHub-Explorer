@@ -1,7 +1,7 @@
 <template>
     <div class="Repository">
         <a 
-            :href="repository.url"
+            :href="repository.html_url"
             target="_blank"
             class="Repository__Link"
         >
@@ -48,6 +48,7 @@ export default class RepositoryComponent extends Vue {
     display: grid
     width: 32rem
     height: 7rem
+    max-width: 100%
     background: #{_(Primary, Light)}
     padding: 1.5rem 2rem
     text-decoration: none
@@ -55,16 +56,32 @@ export default class RepositoryComponent extends Vue {
     justify-content: space-between
     gap: 1rem
     border-radius: .125rem
+    & + &
+        margin-top: 1rem
     &__Link
+        display: inline-grid
         grid-area: link
         text-decoration: none
         +Typo(Heading)
     &__Owner
         grid-area: owner
         color: #{_(Primary, Accent)}
-
+    &__Name
+        overflow: hidden
+        white-space: nowrap
+        text-overflow: ellipsis
+        height: 2.5rem
+        margin-bottom: -.5rem
     &__BranchesRoute
         grid-area: branches
         +Typo(Link)
+
+.Repositories
+    display: flex
+    flex-direction: column
+    height: calc(100vh - 16rem)
+    align-content: flex-start
+    transform: translate3d(0, 3.5rem, 0)
+    padding: 0 1rem
 
 </style>

@@ -40,29 +40,39 @@
                 v-else-if="isAppUnfolded && !isStatusVisible"
             />
         </transition>
-        <div class="Modal" v-if="isBranchMode">
-            <div v-if="areBranchesReady">
-                <div
-                    v-for="branch in getBranches(branchUsername, branchRepository)"
-                    :key="branch.name"
+        <transition name="fade">
+            <Modal
+                v-if="isBranchMode"
+                @closePrompt="disableBranchMode"
+            >
+                <div 
+                    v-if="areBranchesReady"
+                    v-perfect-scroll="scrollSettings"
+                    class="Branches"
                 >
-                    {{ branch.name }}
-                    {{ branch.commit.sha }}
+                    <BranchComponent
+                        v-for="branch in getBranches(branchUsername, branchRepository)"
+                        :key="branch.name"
+                        :branch="branch"
+                        class="Branch"
+                    />
                 </div>
-            </div>
-            <Loader
-                v-else
-            />
-        </div>
+                <Loader
+                    v-else
+                />
+            </Modal>
+        </transition>
     </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
-import Component from 'vue-class-component';
+import Component from "vue-class-component";
 import { Action, Getter } from "vuex-class";
 import { Repository, Branch } from "./types/github";
 import RepositoryComponent from "./components/Repository.vue";
+import BranchComponent from "./components/Branch.vue";
+import Modal from "./components/Modal.vue";
 import Loader from "./components/Loader.vue";
 
 import { isOneOfTrue, areAllTrue } from "./helpers";
@@ -70,7 +80,9 @@ import { isOneOfTrue, areAllTrue } from "./helpers";
 @Component({
     components: {
         RepositoryComponent,
+        BranchComponent,
         Loader,
+        Modal,
     },
 })
 export default class App extends Vue {
@@ -195,7 +207,6 @@ export default class App extends Vue {
         );
     }
     get areBranchesReady() {
-        console.log(this.branchUsername, this.branchRepository, this.isRepositoryStored(this.branchUsername, this.branchRepository));
         return areAllTrue(
             this.isRepositoryStored(this.branchUsername, this.branchRepository),
         );
@@ -205,14 +216,6 @@ export default class App extends Vue {
 
 <style lang="sass">
 @import "styles/mixins"
-
-.Repositories
-    display: grid
-    gap: 1rem
-    height: calc(100vh - 16rem)
-    align-content: start
-    transform: translate3d(0, 3.5rem, 0)
-    padding: 0 1rem
 
 .View
     display: grid
@@ -233,6 +236,7 @@ export default class App extends Vue {
             height: 6rem
             width: 64rem
             padding: 1rem
+            max-width: 80%
             text-align: center
             margin-bottom: 3rem
             transition: .3s
@@ -241,23 +245,31 @@ export default class App extends Vue {
             border-radius: 8px
             transition: 1s
             +Typo(JumboInput)
+            +Breakpoint(640px, max)
+                font-size: 1.5rem
+                height: 4rem
             &:focus
                 border-color: transparent
                 box-shadow: rgba(0, 0, 0, .4) 0 0 1rem
                 border-radius: .5rem
+                outline: 0
             .--Folded &
                 top: 0
                 width: 100%
                 transform: translate3d(-50%, 0, 0)
                 background: transparent
+                max-width: 100%
     &__Status
         position: absolute
         text-align: center
         margin: .75rem 0
         width: 100%
+        padding: 10%
         top: calc(50% + 3rem)
         transform: translate3d(0, -50%, 0)
         +Typo(JumboStatus)
+        +Breakpoint(640px, max)
+            font-size: 1.5rem
         &.--Error
             color: #{_(Global, Warning)}
 

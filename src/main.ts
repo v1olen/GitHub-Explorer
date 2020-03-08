@@ -4,6 +4,10 @@ import store from "./store";
 import "./styles/main.sass";
 import PerfectScrollbar from "perfect-scrollbar";
 
+import vClickOutside from "v-click-outside";
+
+Vue.use(vClickOutside);
+
 Vue.config.productionTip = false;
 
 Vue.directive(`perfect-scroll`, {

@@ -6,9 +6,11 @@
 =Typo($name)
     @extend %Typo#{$name}
 
-=breakpoint($value, $mode: min)
+=Breakpoint($value, $mode: min)
     @if $mode != min and $mode != max
         @warn 'The $mode argument only accepts \'min\' or \'max\' values.'
+    @else if $mode == max
+        $value: $value - 1px
     @media screen and (#{$mode}-width: #{$value})
         @content
 
@@ -17,7 +19,7 @@
     $prefixes: ( moz: "::-moz", webkit: "::-webkit", ie: ":-ms" )
     @each $prop, $value in $prefixes
         @if $prop != "moz"
-            $selector: #{$value}-input-Placeholder
+            $selector: #{$value}-input-placeholder
         @else
             $selector: #{$value}-placeholder
         @if &
@@ -31,8 +33,9 @@
 %TypoJumboInput
     font-size: 3rem
     color: #{_(Primary, Dark)}
-    &::placeholder
+    +Placeholder
         color: #{_(Primary, Accent)}
+        opacity: 0.54
 
 %TypoJumboStatus
     font-size: 2rem

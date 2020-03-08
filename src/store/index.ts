@@ -22,7 +22,7 @@ export default new Vuex.Store<RootState>(({
     },
     getters: {
         isUserStored: state => (username: string) => Object.keys(state.users).includes(username),
-        getRepositories: state => (username: string) => state.users[username] ? state.users[username] : [],
+        getRepositories: state => (username: string) => state.users[username] || [],
         isRepositoryStored: state => 
             (username: string, repository: string) => 
                 Object.keys(state.repositories).includes(`${username}/${repository}`),
