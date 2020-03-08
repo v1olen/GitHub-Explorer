@@ -28,7 +28,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from 'vue-class-component';
-import { Repository } from "../types/github";
+import { Repository } from "@Types/github";
 
 @Component({
     components: {},

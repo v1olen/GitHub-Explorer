@@ -12,7 +12,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from 'vue-class-component';
-import { Branch } from "../types/github";
+import { Branch } from "@Types/github";
 
 @Component({
     components: {},

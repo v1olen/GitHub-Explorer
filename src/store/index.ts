@@ -1,8 +1,9 @@
-import Vue from 'vue';
-import Vuex, { StoreOptions } from 'vuex';
-import VuexPersistence from 'vuex-persist';
-import axios, { AxiosResponse } from 'axios';
-import { Repository, Branch } from "../types/github";
+import Vue from "vue";
+import Vuex, { StoreOptions } from "vuex";
+import VuexPersistence from "vuex-persist";
+import axios, { AxiosResponse } from "axios";
+
+import { Repository, Branch } from "@Types/github";
 
 Vue.use(Vuex);
 

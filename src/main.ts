@@ -1,10 +1,11 @@
 import Vue from "vue";
-import App from "./App.vue";
-import store from "./store";
-import "./styles/main.sass";
 import PerfectScrollbar from "perfect-scrollbar";
-
 import vClickOutside from "v-click-outside";
+
+import App from "./App.vue";
+import "./styles/main.sass";
+
+import store from "@Store";
 
 Vue.use(vClickOutside);
 

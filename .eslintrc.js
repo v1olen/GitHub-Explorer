@@ -57,7 +57,7 @@ module.exports = {
             },
         }],
         "@typescript-eslint/camelcase": [
-            `off`
+            `off`,
         ],
     },
 };

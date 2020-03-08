@@ -69,13 +69,15 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { Action, Getter } from "vuex-class";
-import { Repository, Branch } from "./types/github";
-import RepositoryComponent from "./components/Repository.vue";
-import BranchComponent from "./components/Branch.vue";
-import Modal from "./components/Modal.vue";
-import Loader from "./components/Loader.vue";
 
-import { isOneOfTrue, areAllTrue } from "./helpers";
+import RepositoryComponent from "@Components/Repository.vue";
+import BranchComponent from "@Components/Branch.vue";
+import Modal from "@Components/Modal.vue";
+import Loader from "@Components/Loader.vue";
+
+import { Repository, Branch } from "@Types/github";
+
+import { isOneOfTrue, areAllTrue } from "@Helpers";
 
 @Component({
     components: {
