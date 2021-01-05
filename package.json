@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@types/perfect-scrollbar": "^1.3.0",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "core-js": "^3.6.4",
     "perfect-scrollbar": "^1.5.0",
     "v-click-outside": "^3.0.1",
